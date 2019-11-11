@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
 
 const User = ({ user, onPress }) => {
   const [opacity, setOpacity] = useState(new Animated.Value(0));
+
   const [offset, setOffSet] = useState(
     new Animated.ValueXY({
       x: 0,
@@ -97,9 +98,21 @@ const User = ({ user, onPress }) => {
     >
       <TouchableWithoutFeedback onPress={onPress}>
         <View style={styles.userContainer}>
-          <Image style={styles.thumbnail} source={{ uri: user.thumbnail }} />
+          <Image
+            style={styles.thumbnail}
+            source={{
+              uri: user.thumbnail,
+            }}
+          />
 
-          <View style={[styles.infoContainer, { backgroundColor: user.color }]}>
+          <View
+            style={[
+              styles.infoContainer,
+              {
+                backgroundColor: user.color,
+              },
+            ]}
+          >
             <View style={styles.bioContainer}>
               <Text style={styles.name}>{user.name.toUpperCase()}</Text>
               <Text style={styles.description}>{user.description}</Text>

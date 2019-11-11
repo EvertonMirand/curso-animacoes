@@ -86,14 +86,26 @@ export default function App() {
     },
   ]);
 
+  const [userInfoProgess, setUserInfoProgess] = useState(new Animated.Value(0));
+  const [listProgess, setListProgress] = useState(new Animated.Value(0));
   const [scrollOffset, setScrollOffset] = useState(new Animated.Value(0));
-
   const [userSelected, setUserSelected] = useState(null);
   const [userInfoVisible, setUserInfoVisible] = useState(false);
 
   const selectUser = user => {
     setUserSelected(user);
-    setUserInfoVisible(true);
+    Animated.sequence([
+      Animated.timing(listProgess, {
+        toValue: 100,
+        duration: 300,
+      }),
+      Animated.timing(userInfoProgess, {
+        toValue: 100,
+        duration: 500,
+      }),
+    ]).start(() => {
+      setUserInfoVisible(true);
+    });
   };
 
   const renderDetail = () => (
@@ -103,7 +115,21 @@ export default function App() {
   );
 
   const renderList = () => (
-    <View style={styles.container}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          transform: [
+            {
+              translateX: listProgess.interpolate({
+                inputRange: [0, 100],
+                outputRange: [0, width],
+              }),
+            },
+          ],
+        },
+      ]}
+    >
       <ScrollView
         scrollEventThrottle={16}
         onScroll={Animated.event([
@@ -120,7 +146,7 @@ export default function App() {
           <User key={user.id} user={user} onPress={() => selectUser(user)} />
         ))}
       </ScrollView>
-    </View>
+    </Animated.View>
   );
 
   return (
@@ -139,8 +165,16 @@ export default function App() {
           },
         ]}
       >
-        <Image
-          style={styles.headerImage}
+        <Animated.Image
+          style={[
+            styles.headerImage,
+            {
+              opacity: userInfoProgess.interpolate({
+                inputRange: [0, 100],
+                outputRange: [0, 1],
+              }),
+            },
+          ]}
           source={userSelected ? { uri: userSelected.thumbnail } : null}
         />
 
@@ -153,10 +187,35 @@ export default function App() {
                 outputRange: [24, 16],
                 extrapolate: 'clamp',
               }),
+              transform: [
+                {
+                  translateX: userInfoProgess.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: [0, width],
+                  }),
+                },
+              ],
             },
           ]}
         >
-          {userSelected ? userSelected.name : 'GoNative'}
+          GoNative
+        </Animated.Text>
+        <Animated.Text
+          style={[
+            styles.headerText,
+            {
+              transform: [
+                {
+                  translateX: userInfoProgess.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: [width * -1, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          {userSelected && userSelected.name}
         </Animated.Text>
       </Animated.View>
       {userInfoVisible ? renderDetail() : renderList()}
