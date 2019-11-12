@@ -7,6 +7,9 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   Animated,
+  PanResponder,
+  Dimensions,
+  Alert,
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -64,6 +67,8 @@ const styles = StyleSheet.create({
   },
 });
 
+const { width } = Dimensions.get('window');
+
 const User = ({ user, onPress }) => {
   const [opacity, setOpacity] = useState(new Animated.Value(0));
 
@@ -73,6 +78,33 @@ const User = ({ user, onPress }) => {
       y: 50,
     })
   );
+
+  const _panResponder = PanResponder.create({
+    onPanResponderTerminationRequest: () => false,
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderMove: Animated.event([
+      null,
+      {
+        dx: offset.x,
+      },
+    ]),
+    onPanResponderRelease: () => {
+      if (offset.x._value < -200) {
+        Alert.alert('Deleted!');
+      }
+
+      Animated.spring(offset.x, {
+        toValue: 0,
+        bounciness: 10,
+      }).start();
+    },
+    onPanResponderTerminate: () => {
+      Animated.spring(offset.x, {
+        toValue: 0,
+        bounciness: 10,
+      }).start();
+    },
+  });
 
   useEffect(() => {
     Animated.parallel([
@@ -90,9 +122,18 @@ const User = ({ user, onPress }) => {
 
   return (
     <Animated.View
+      {..._panResponder.panHandlers}
       style={[
         {
-          transform: [...offset.getTranslateTransform()],
+          transform: [
+            ...offset.getTranslateTransform(),
+            {
+              rotateZ: offset.x.interpolate({
+                inputRange: [width * -1, width],
+                outputRange: ['-50deg', '50deg'],
+              }),
+            },
+          ],
         },
       ]}
     >
